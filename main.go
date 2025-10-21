@@ -119,6 +119,24 @@ func (dc *DeviceController) createStatusPacket(fahrenheit bool) []byte {
 	return statusData
 }
 
+func turnOffZero() []byte {
+	statusData := make([]byte, 64)
+	statusData[0] = 0x10
+	statusData[1] = 0x68
+	statusData[2] = 0x01
+	statusData[3] = 0x01
+	statusData[4] = 0x02
+	statusData[5] = 0x02
+	statusData[6] = 0x00
+	statusData[7] = 0x6E
+	statusData[8] = 0x16
+	for i := 9; i < 64; i++ {
+		statusData[i] = 0x00
+	}
+
+	return statusData
+}
+
 // Инициализация устройства
 func (dc *DeviceController) Initialize() error {
 	init1 := make([]byte, 64)
@@ -149,16 +167,30 @@ func (dc *DeviceController) Initialize() error {
 	return nil
 }
 
+func (dc *DeviceController) sendPacket(data []byte) error {
+	if _, err := dc.device.Write(data); err != nil {
+		log.Printf("Write error: %v", err)
+		return err
+	}
+	time.Sleep(500 * time.Millisecond)
+	return nil
+}
+
 // Отправка пакета статуса
 func (dc *DeviceController) SendStatusLoop() {
+	hasControlZeroes := false
+
+	// Если нужно выключить управляющие нули
+	if !hasControlZeroes {
+		_ = dc.sendPacket(turnOffZero())
+	}
+
+	// Основной цикл отправки статуса
 	for {
 		data := dc.createStatusPacket(false)
-		_, err := dc.device.Write(data)
-		if err != nil {
-			log.Printf("Write error: %v", err)
+		if err := dc.sendPacket(data); err != nil {
 			break
 		}
-		time.Sleep(500 * time.Millisecond)
 	}
 }
 
