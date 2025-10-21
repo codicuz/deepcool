@@ -7,16 +7,15 @@ import (
 	"math"
 	"time"
 
+	"codicus.ru/deepcool/devices"
 	"github.com/karalabe/hid"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/host"
 )
 
-const (
-	VID           = 0x3633 // DeepCool Vendor ID
-	PID           = 0x000A // LD-Series Product ID
-	CPU_TDP_WATTS = 170
-)
+var Version = "1.0.0"
+
+var dc = devices.NewDcLd360()
 
 // DeviceController — структура для работы с устройством
 type DeviceController struct {
@@ -77,7 +76,7 @@ func getCPUUsage() int {
 
 // Расчет потребляемой мощности CPU
 func getCPUPower(usagePercent int) int {
-	return CPU_TDP_WATTS * usagePercent / 100
+	return int(dc.GetCpuTdpWatts()) * usagePercent / 100
 }
 
 // Создание пакета статуса
@@ -163,7 +162,7 @@ func (dc *DeviceController) Initialize() error {
 		return err
 	}
 	time.Sleep(50 * time.Millisecond)
-	fmt.Println("Initialization done.")
+	log.Println("Initialization done.")
 	return nil
 }
 
@@ -195,13 +194,14 @@ func (dc *DeviceController) SendStatusLoop() {
 }
 
 func main() {
-	controller, err := NewDeviceController(VID, PID)
+	log.Println("Version:", Version)
+	controller, err := NewDeviceController(dc.GetVid(), dc.GetPid())
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
 	defer controller.Close()
 
-	fmt.Println("Device connected!")
+	log.Println("Device connected!")
 
 	if err := controller.Initialize(); err != nil {
 		log.Fatalf("Initialization error: %v", err)
