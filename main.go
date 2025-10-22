@@ -8,7 +8,7 @@ import (
 	"codicus.ru/deepcool/metrics"
 )
 
-var Version = "1.2.0"
+var Version = "1.3.0"
 var dcDevice = devices.NewDcLdS360()
 var m = &metrics.Metrics{}
 
@@ -22,7 +22,7 @@ func main() {
 
 	log.Println("Device connected!")
 
-	if err := controller.Initialize(); err != nil {
+	if err := controller.Initialize(false); err != nil {
 		log.Fatalf("Initialization error: %v", err)
 	}
 
