@@ -13,7 +13,7 @@ import (
 	"github.com/shirou/gopsutil/v3/host"
 )
 
-var Version = "1.0.0"
+var Version = "1.1.0"
 
 var dc = devices.NewDcLd360()
 
@@ -118,52 +118,44 @@ func (dc *DeviceController) createStatusPacket(fahrenheit bool) []byte {
 	return statusData
 }
 
-func turnOffZero() []byte {
-	statusData := make([]byte, 64)
-	statusData[0] = 0x10
-	statusData[1] = 0x68
-	statusData[2] = 0x01
-	statusData[3] = 0x01
-	statusData[4] = 0x02
-	statusData[5] = 0x02
-	statusData[6] = 0x00
-	statusData[7] = 0x6E
-	statusData[8] = 0x16
-	for i := 9; i < 64; i++ {
-		statusData[i] = 0x00
-	}
-
-	return statusData
-}
-
 // Инициализация устройства
 func (dc *DeviceController) Initialize() error {
-	init1 := make([]byte, 64)
-	init1[0] = 0x10
-	init1[1] = 0x68
-	init1[2] = 0x01
-	init1[3] = 0x01
-	init1[4] = 0x02
-	init1[5] = 0x03
-	init1[6] = 0x01
-	init1[7] = 0x70
-	init1[8] = 0x16
+	init := make([]byte, 64)
+	init[0] = 0x10
+	init[1] = 0x68
+	init[2] = 0x01
+	init[3] = 0x01
+	init[4] = 0x02
+	init[5] = 0x03
+	init[6] = 0x01
+	init[7] = 0x70
+	init[8] = 0x16
 
-	init2 := make([]byte, len(init1))
-	copy(init2, init1)
-	init2[5] = 0x02
-	init2[7] = 0x6F
-
-	if _, err := dc.device.Write(init1); err != nil {
+	if _, err := dc.device.Write(init); err != nil {
 		return err
 	}
 	time.Sleep(50 * time.Millisecond)
-	if _, err := dc.device.Write(init2); err != nil {
+
+	if _, err := dc.device.Write(dc.Configure(init, false)); err != nil {
 		return err
 	}
 	time.Sleep(50 * time.Millisecond)
+
 	log.Println("Initialization done.")
 	return nil
+}
+
+func (dc *DeviceController) Configure(initData []byte, hazControlZeroes bool) []byte {
+	if hazControlZeroes {
+		initData[5] = 0x02
+		initData[7] = 0x6F
+		time.Sleep(50 * time.Millisecond)
+	} else {
+		initData[5] = 0x02
+		initData[6] = 0x00
+		initData[7] = 0x6E
+	}
+	return initData
 }
 
 func (dc *DeviceController) sendPacket(data []byte) error {
@@ -177,14 +169,6 @@ func (dc *DeviceController) sendPacket(data []byte) error {
 
 // Отправка пакета статуса
 func (dc *DeviceController) SendStatusLoop() {
-	hasControlZeroes := false
-
-	// Если нужно выключить управляющие нули
-	if !hasControlZeroes {
-		_ = dc.sendPacket(turnOffZero())
-	}
-
-	// Основной цикл отправки статуса
 	for {
 		data := dc.createStatusPacket(false)
 		if err := dc.sendPacket(data); err != nil {
