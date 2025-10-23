@@ -55,12 +55,15 @@ func (dc *DeviceController) sendPacket(data []byte) error {
 	return nil
 }
 
-func (dc *DeviceController) SendStatusLoop(sensorName string) {
+func (dc *DeviceController) SendStatusLoop(sensorName string, output bool) {
 	for {
 		dc.metrics.Update(sensorName, dc.cpuTdpWatts)
 		data := dc.createStatusPacket(false)
 		if err := dc.sendPacket(data); err != nil {
 			break
+		}
+		if output {
+			log.Printf("Sending status: Temp=%.2f°C, Usage=%d%%, Power=%dW", dc.metrics.GetCpuTemp(), dc.metrics.GetCpuUsage(), dc.metrics.GetCpuPower())
 		}
 	}
 }

@@ -1,6 +1,3 @@
-/*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -8,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 )
-var version = "2.0.0"
+var version = "2.0.1"
 
 var versionCmd = &cobra.Command{
 	Use:   "version",

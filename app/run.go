@@ -8,7 +8,7 @@ import (
 	"codicus.ru/deepcool/metrics"
 )
 
-func Run(sensorName string, deviceModel string) {
+func Run(sensorName string, deviceModel string, output bool) {
 	var dcDevice devices.Device
 	switch deviceModel {
 	case "dc_ld_s360":
@@ -33,5 +33,5 @@ func Run(sensorName string, deviceModel string) {
 	}
 
 	// controller.SendStatusLoop("k10temp_tctl")
-	controller.SendStatusLoop(sensorName)
+	controller.SendStatusLoop(sensorName, output)
 }

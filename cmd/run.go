@@ -7,13 +7,14 @@ import (
 
 var tempSensorName string
 var deviceModel string
+var output bool
 
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run application",
 	Long: "Run DeepCool application",
 	Run: func(cmd *cobra.Command, args []string) {
-		app.Run(tempSensorName, deviceModel)
+		app.Run(tempSensorName, deviceModel, output)
 	},
 }
 
@@ -23,4 +24,5 @@ func init() {
 	runCmd.MarkFlagRequired("temperature-sensor")
 	runCmd.Flags().StringVarP(&deviceModel, "device-model", "d", "", "Device model [dc_ld_s360]")
 	runCmd.MarkFlagRequired("device-model")
+	runCmd.Flags().BoolVarP(&output, "output", "o", false, "Enable output")
 }
