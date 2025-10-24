@@ -4,8 +4,9 @@ import (
 	"math"
 	"time"
 
-	"codicus.ru/deepcool/metrics"
 	"encoding/binary"
+
+	"github.com/codicuz/deepcool/metrics"
 )
 
 type DcLdS360 struct {

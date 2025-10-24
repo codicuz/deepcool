@@ -1,6 +1,6 @@
 package main
 
-import "codicus.ru/deepcool/cmd"
+import "github.com/codicuz/deepcool/cmd"
 
 func main() {
 	cmd.Execute()

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"codicus.ru/deepcool/app"
+	"github.com/codicuz/deepcool/app"
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +12,7 @@ var output bool
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run application",
-	Long: "Run DeepCool application",
+	Long:  "Run DeepCool application",
 	Run: func(cmd *cobra.Command, args []string) {
 		app.Run(tempSensorName, deviceModel, output)
 	},

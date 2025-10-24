@@ -3,9 +3,9 @@ package app
 import (
 	"log"
 
-	"codicus.ru/deepcool/controllers"
-	"codicus.ru/deepcool/devices"
-	"codicus.ru/deepcool/metrics"
+	"github.com/codicuz/deepcool/controllers"
+	"github.com/codicuz/deepcool/devices"
+	"github.com/codicuz/deepcool/metrics"
 )
 
 func Run(sensorName string, deviceModel string, output bool) {

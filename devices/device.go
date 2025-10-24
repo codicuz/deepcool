@@ -1,6 +1,6 @@
 package devices
 
-import "codicus.ru/deepcool/metrics"
+import "github.com/codicuz/deepcool/metrics"
 
 type Device interface {
 	GetVid() uint16

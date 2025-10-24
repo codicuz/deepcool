@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"codicus.ru/deepcool/devices"
-	"codicus.ru/deepcool/metrics"
+	"github.com/codicuz/deepcool/devices"
+	"github.com/codicuz/deepcool/metrics"
 	"github.com/karalabe/hid"
 )
 
