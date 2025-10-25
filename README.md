@@ -1,27 +1,24 @@
-# 🧊 DeepCool Controller CLI
-
+# 🧊 DeepCool Controller CLI v2
 ## 📘 Overview
 
-**DeepCool Controller** is a Go-based command-line interface (CLI) tool that communicates with DeepCool cooling devices (such as **DeepCool LD S360**) via USB HID.  
-It monitors real-time CPU metrics (temperature, usage, and power) and sends this data to your DeepCool device for dynamic cooling control.
+**DeepCool Controller** is a Go-based command-line tool for communicating with DeepCool cooling devices (e.g., **DeepCool LD S360**) via USB HID.  
+It continuously monitors CPU metrics—temperature, usage, and power—and sends them to the connected device, allowing dynamic cooling management.  
 
----
+This version introduces configurable **CPU TDP**, **packet interval**, and optional console output.
 
 ## ⚙️ Features
 
-- 📡 Real-time CPU monitoring: temperature, usage, and estimated power  
-- 💡 USB HID device communication  
-- 🧩 Modular architecture (devices, metrics, controllers)  
-- 🖥️ Command-line interface using [Cobra](https://github.com/spf13/cobra)  
-- 🪶 Optional console output for debugging (`--output`)  
-- 🧱 Easily extensible for new DeepCool devices  
-
----
+- Real-time CPU monitoring: temperature, usage, and estimated power  
+- USB HID device communication  
+- Modular architecture (devices, metrics, controllers)  
+- CLI interface using [Cobra](https://github.com/spf13/cobra)  
+- Optional console output (`--output`)  
+- Configurable CPU TDP and packet send interval (`--cpu-tdp-watts`, `--interval`)  
+- Easily extensible for new DeepCool devices  
 
 ## 🧩 Project Structure
 
 ```
-
 deepcool/
 ├── app/              # Application logic (Run function)
 ├── cmd/              # CLI command definitions using Cobra
@@ -31,8 +28,6 @@ deepcool/
 └── main.go           # Entry point
 
 ````
-
----
 
 ## 🚀 Installation
 
@@ -49,67 +44,57 @@ cd deepcool
 go build -o deepcool
 ```
 
-### 3. Verify the installation
+### 3. Verify installation
 
 ```bash
 ./deepcool --help
 ```
-
-You should see a list of available commands and flags.
-
----
-
 ## 💻 Usage
-
-### 🔧 Run the application
+### Run the application
 
 ```bash
-./deepcool run -t <sensorName> -d <deviceModel> [--output]
+./deepcool run -t <sensorName> -d <deviceModel> [--cpu-tdp-watts <watts>] [--interval <ms>] [--output]
 ```
 
 **Arguments:**
 
-| Flag                         | Name                              | Description             | Required |
-| ---------------------------- | --------------------------------- | ----------------------- | -------- |
-| `-t`, `--temperature-sensor` | Temperature sensor name           | Example: `k10temp_tctl` | ✅        |
-| `-d`, `--device-model`       | DeepCool device model             | Example: `dc_ld_s360`   | ✅        |
-| `-o`, `--output`             | Enable console output for metrics | ❌                       |          |
+| Flag                       | Name                                          | Description             | Default | Required |
+| -------------------------- | --------------------------------------------- | ----------------------- | ------- | -------- |
+| `-t, --temperature-sensor` | Temperature sensor name                       | Example: `k10temp_tctl` | —       | ✅        |
+| `-d, --device-model`       | DeepCool device model                         | Example: `dc_ld_s360`   | —       | ✅        |
+| `-c, --cpu-tdp-watts`      | Thermal Design Power of CPU in watts          | 170                     | ❌       |          |
+| `-i, --interval`           | Interval between packet sends in milliseconds | 500                     | ❌       |          |
+| `-o, --output`             | Enable console output of metrics              | false                   | ❌       |          |
 
 **Example:**
 
 ```bash
-./deepcool run -t k10temp_tctl -d dc_ld_s360 --output
+./deepcool run -t k10temp_tctl -d dc_ld_s360 -c 95 -i 300 --output
 ```
 
-When `--output` is enabled, you’ll see continuous logs of CPU status:
+**Example output:**
 
 ```
-2025/10/24 12:00:11 Device connected!
-2025/10/24 12:00:11 Initialization done.
-2025/10/24 12:00:12 Sending status: Temp=46.10°C, Usage=32%, Power=54W
+2025/10/25 12:05:21 Device connected!
+2025/10/25 12:05:21 Initialization done.
+2025/10/25 12:05:21 Sending status: Temp=43.50°C, Usage=27%, Power=26W
+2025/10/25 12:05:22 Sending status: Temp=44.12°C, Usage=30%, Power=28W
 ```
-
----
-
 ## 🧠 How It Works
 
-1. The CLI initializes the DeepCool device using its **Vendor ID (VID)** and **Product ID (PID)**.
-2. The `metrics` package uses `gopsutil` to read system CPU temperature and usage.
-3. The `controllers` package formats these values into HID packets.
-4. The device receives the packets and updates its cooling behavior dynamically.
-5. If `--output` is enabled, metrics are printed to the console in real-time.
-
----
+1. The CLI initializes the device using **Vendor ID (VID)** and **Product ID (PID)**.
+2. The `metrics` package collects CPU temperature, usage, and calculates power based on the configured TDP.
+3. The `controllers` package formats the metrics into HID packets and sends them at the configured interval.
+4. If the `--output` flag is enabled, metrics are printed to the console.
+5. The device dynamically adjusts cooling based on received data.
 
 ## 🧰 Commands
 
 | Command            | Description                                  |
 | ------------------ | -------------------------------------------- |
 | `deepcool run`     | Run the DeepCool monitoring and control loop |
-| `deepcool version` | Display current version                      |
-| `deepcool help`    | Show help and available commands             |
-
----
+| `deepcool version` | Show the current version of the application  |
+| `deepcool help`    | Display help and available commands          |
 
 ## 🧩 Adding Support for New Devices
 
@@ -117,63 +102,53 @@ To add a new DeepCool device model:
 
 1. Create a new struct in `devices/` implementing the `Device` interface.
 2. Define its **VID**, **PID**, and packet structure (`GetStatusPacket`, `GetDataPacket`, etc.).
-3. Register the model in `app.Run()` with a new `case` in the device switch block.
-
-Example:
+3. Add a new `case` in `app.Run()` to register the device model:
 
 ```go
 case "dc_ld_s280":
     dcDevice = devices.NewDcLdS280()
 ```
 
----
-
 ## 🔍 Technical Details
 
 * **Language:** Go 1.22+
-* **Libraries:**
+* **Libraries Used:**
 
   * [`spf13/cobra`](https://github.com/spf13/cobra) – CLI framework
   * [`karalabe/hid`](https://github.com/karalabe/hid) – USB HID communication
-  * [`shirou/gopsutil`](https://github.com/shirou/gopsutil) – CPU and system metrics
+  * [`shirou/gopsutil`](https://github.com/shirou/gopsutil) – CPU metrics
 * **Communication Protocol:** HID (64-byte packets)
-* **Supported Systems:** Linux / Windows (with HID support)
-
----
+* **Configurable Parameters:** CPU TDP, packet interval
+* **Supported OS:** Linux / Windows (with HID support)
 
 ## 🪪 License
 
-This project is licensed under the **MIT License**.
-See the [LICENSE](LICENSE) file for more information.
-
----
+This project is licensed under the MIT License.
+See the [LICENSE](LICENSE) file for details.
 
 ## 💬 Contributing
 
-1. Fork this repository
-2. Create your feature branch:
+1. Fork the repository
+2. Create a feature branch:
 
-   ```bash
-   git checkout -b feature/new-device
-   ```
+```bash
+git checkout -b feature/new-device
+```
+
 3. Commit your changes:
 
-   ```bash
-   git commit -am 'Add new DeepCool device support'
-   ```
-4. Push the branch and open a Pull Request
+```bash
+git commit -am 'Add new DeepCool device support'
+```
+
+4. Push and create a Pull Request
 
 ---
-
 ## 🧊 Example Output
-
 ```
-2025/10/24 15:11:09 Device connected!
-2025/10/24 15:11:09 Initialization done.
-2025/10/24 15:11:10 Sending status: Temp=42.58°C, Usage=19%, Power=25W
-2025/10/24 15:11:11 Sending status: Temp=44.03°C, Usage=23%, Power=30W
+2025/10/25 12:10:00 Device connected!
+2025/10/25 12:10:00 Initialization done.
+2025/10/25 12:10:01 Sending status: Temp=42.85°C, Usage=22%, Power=20W
+2025/10/25 12:10:01 Sending status: Temp=43.20°C, Usage=25%, Power=23W
 ```
-
----
-
-**DeepCool Controller CLI — control your cooling, monitor your CPU, stay cool.**
+**DeepCool Controller CLI v2 — control your cooling, monitor CPU, and stay efficient.**

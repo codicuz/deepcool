@@ -14,7 +14,8 @@ type DeviceController struct {
 	device      *hid.Device
 	metrics     *metrics.Metrics
 	deviceInfo  devices.Device
-	cpuTdpWatts int
+	timeout     time.Duration
+	cpuTdpWatts uint16
 }
 
 func (dc *DeviceController) Initialize(hasControlZeros bool) error {
@@ -23,12 +24,12 @@ func (dc *DeviceController) Initialize(hasControlZeros bool) error {
 	if _, err := dc.device.Write(init); err != nil {
 		return err
 	}
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(dc.timeout)
 
 	if _, err := dc.device.Write(dc.Configure(init, hasControlZeros)); err != nil {
 		return err
 	}
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(dc.timeout)
 
 	log.Println("Initialization done.")
 	return nil
@@ -51,7 +52,7 @@ func (dc *DeviceController) sendPacket(data []byte) error {
 		log.Printf("Write error: %v", err)
 		return err
 	}
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(dc.timeout)
 	return nil
 }
 
@@ -72,7 +73,7 @@ func (dc *DeviceController) Close() {
 	dc.device.Close()
 }
 
-func NewDeviceController(vid, pid uint16, m *metrics.Metrics, devInfo devices.Device, cTdpWatts int) (*DeviceController, error) {
+func NewDeviceController(vid, pid uint16, m *metrics.Metrics, devInfo devices.Device, cTdpWatts uint16, tOut uint16) (*DeviceController, error) {
 	devices := hid.Enumerate(vid, pid)
 	if len(devices) == 0 {
 		return nil, fmt.Errorf("device not found (VID=%04x, PID=%04x)", vid, pid)
@@ -88,5 +89,6 @@ func NewDeviceController(vid, pid uint16, m *metrics.Metrics, devInfo devices.De
 		metrics:     m,
 		deviceInfo:  devInfo,
 		cpuTdpWatts: cTdpWatts,
+		timeout: time.Duration(tOut) * time.Millisecond,
 	}, nil
 }

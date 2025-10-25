@@ -34,11 +34,11 @@ func (m *Metrics) getCpuUsage() int {
 	return int(percentages[0])
 }
 
-func (m *Metrics) getCpuPower(usagePercent int, cpuTdpWatts int) int {
+func (m *Metrics) getCpuPower(usagePercent int, cpuTdpWatts uint16) int {
 	return int(cpuTdpWatts) * usagePercent / 100
 }
 
-func (m *Metrics) Update(sensorName string, cpuTdpWatts int) {
+func (m *Metrics) Update(sensorName string, cpuTdpWatts uint16) {
 	m.cpuTemp = m.getCpuTemp(sensorName)
 	m.cpuUsage = m.getCpuUsage()
 	m.cpuPower = m.getCpuPower(m.cpuUsage, cpuTdpWatts)
