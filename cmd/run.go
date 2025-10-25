@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/codicuz/deepcool/app"
+	"github.com/codicuz/deepcool/v2/app"
 	"github.com/spf13/cobra"
 )
 

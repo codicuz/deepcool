@@ -6,7 +6,7 @@ import (
 
 	"encoding/binary"
 
-	"github.com/codicuz/deepcool/metrics"
+	"github.com/codicuz/deepcool/v2/metrics"
 )
 
 type DcLdS360 struct {

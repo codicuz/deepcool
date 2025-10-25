@@ -1,4 +1,4 @@
-module github.com/codicuz/deepcool
+module github.com/codicuz/deepcool/v2
 
 go 1.25.3
 
