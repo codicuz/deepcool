@@ -8,7 +8,7 @@ import (
 	"github.com/codicuz/deepcool/v2/metrics"
 )
 
-func Run(sensorName string, deviceModel string, output bool) {
+func Run(sensorName string, deviceModel string, output bool, cpuTdpWatts uint16, interval uint16) {
 	var dcDevice devices.Device
 	switch deviceModel {
 	case "dc_ld_s360":
@@ -20,7 +20,7 @@ func Run(sensorName string, deviceModel string, output bool) {
 	devices.NewDcLdS360()
 	var m = &metrics.Metrics{}
 
-	controller, err := controllers.NewDeviceController(dcDevice.GetVid(), dcDevice.GetPid(), m, dcDevice, 170)
+	controller, err := controllers.NewDeviceController(dcDevice.GetVid(), dcDevice.GetPid(), m, dcDevice, cpuTdpWatts, interval)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
